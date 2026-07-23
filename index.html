@@ -1,0 +1,1951 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ModuPDF - PDF Araçları</title>
+  <!-- Favicon Eklendi -->
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/oxiloncode/moduikblog/refs/heads/main/1.png?token=GHSAT0AAAAAAECSHFVNPQNHWOJSAFDKSJIC2TBUT3Q" />
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <style>
+    :root{
+      --bg:#1f1f1f;
+      --panel:#233142;
+      --panel2:#202c3a;
+      --line:#4b5d73;
+      --text:#f4f4f4;
+      --muted:#bfc8d2;
+      --orange:#ed8700;
+      --orange2:#ff9b19;
+      --blue:#5e90e8;
+      --danger:#e85d5d;
+      --green:#55c779;
+      --shadow:0 18px 60px rgba(0,0,0,.35);
+      --radius:8px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+    }
+    button,input,select,textarea{font:inherit}
+    a{color:inherit; text-decoration: none;}
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:20;
+      background:rgba(31,31,31,.86);
+      backdrop-filter:blur(16px);
+      border-bottom:1px solid rgba(255,255,255,.06);
+    }
+    .topbar-inner{
+      max-width:1510px;
+      margin:0 auto;
+      display:flex;
+      align-items:center;
+      gap:16px;
+      padding:12px 40px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      transition: opacity 0.2s;
+    }
+    .brand:hover {
+      opacity: 0.85;
+    }
+    /* Yeni Logo Sınıfı */
+    .brand-logo {
+      height: 38px;
+      width: auto;
+      object-fit: contain;
+      display: block;
+    }
+    .search{
+      flex:1;
+      position:relative;
+      max-width:620px;
+      margin-left:auto;
+    }
+    .search input{
+      width:100%;
+      border:1px solid rgba(255,255,255,.12);
+      background:#151a20;
+      color:var(--text);
+      border-radius:999px;
+      padding:12px 44px 12px 18px;
+      outline:none;
+      transition:.2s;
+    }
+    .search input:focus{
+      border-color:var(--blue);
+      box-shadow:0 0 0 4px rgba(94,144,232,.13);
+    }
+    .search span{
+      position:absolute;
+      right:15px;top:50%;
+      transform:translateY(-50%);
+      opacity:.7;
+    }
+    .top-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .pill-btn{
+      border:1px solid rgba(255,255,255,.12);
+      background:#151a20;
+      color:var(--text);
+      border-radius:999px;
+      padding:10px 14px;
+      cursor:pointer;
+      transition:.2s;
+      white-space:nowrap;
+    }
+    .pill-btn:hover,.pill-btn.active{
+      border-color:var(--orange);
+      background:rgba(237,135,0,.14);
+      color:#fff;
+    }
+    .hero{
+      text-align:center;
+      max-width:1510px;
+      margin:0 auto;
+      padding:20px 40px 0;
+    }
+    .mascot{
+      margin:-22px auto 12px;
+      width:82px;height:82px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      background:#111927;
+      border:1px solid var(--blue);
+      box-shadow:0 0 0 7px rgba(94,144,232,.06);
+      font-size:39px;
+      transform:rotate(-8deg);
+    }
+    h1{
+      margin:0;
+      font-size:37px;
+      line-height:1.15;
+      letter-spacing:-.7px;
+    }
+    .subtitle{
+      margin:13px 0 36px;
+      color:#fff;
+      font-size:17px;
+      font-family:Georgia,serif;
+      letter-spacing:.15px;
+    }
+    .categories{
+      max-width:1510px;
+      margin:0 auto 16px;
+      padding:0 40px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:center;
+    }
+    .cat{
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--muted);
+      background:transparent;
+      border-radius:999px;
+      padding:8px 13px;
+      cursor:pointer;
+      transition:.2s;
+      font-size:13px;
+    }
+    .cat:hover,.cat.active{
+      color:#fff;
+      border-color:var(--orange);
+      background:rgba(237,135,0,.16);
+    }
+    .tools-wrap{
+      max-width:1510px;
+      margin:0 auto;
+      padding:0 40px 90px;
+    }
+    .tools-grid{
+      display:grid;
+      grid-template-columns:repeat(8,1fr);
+      gap:10px;
+    }
+    .tool-card{
+      position:relative;
+      min-height:112px;
+      border:1px solid var(--line);
+      background:var(--panel);
+      border-radius:5px;
+      color:#fff;
+      cursor:pointer;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      padding:12px 10px 14px;
+      transition:transform .18s, background .18s, border-color .18s, box-shadow .18s;
+      overflow:hidden;
+      user-select:none;
+    }
+    .tool-card:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at 50% 0%, rgba(255,255,255,.09), transparent 45%);
+      opacity:0;
+      transition:.18s;
+      pointer-events:none;
+    }
+    .tool-card:hover{
+      transform:translateY(-3px);
+      border-color:#7d8fa5;
+      background:#26384b;
+      box-shadow:0 12px 22px rgba(0,0,0,.22);
+    }
+    .tool-card:hover:before{opacity:1}
+    .icon{
+      height:52px;
+      display:grid;
+      place-items:center;
+      font-size:35px;
+      filter:drop-shadow(0 2px 1px rgba(0,0,0,.35));
+      margin-bottom:7px;
+    }
+    .tool-title{
+      font-size:15px;
+      line-height:1.18;
+      text-align:center;
+      max-width:150px;
+    }
+    .star{
+      position:absolute;
+      top:7px;
+      right:7px;
+      width:22px;height:22px;
+      display:grid;
+      place-items:center;
+      border:0;
+      background:transparent;
+      color:#718093;
+      cursor:pointer;
+      font-size:20px;
+      z-index:2;
+      padding:0;
+      transition:.15s;
+    }
+    .star:hover,.star.saved{color:#ffbd45;text-shadow:0 0 10px rgba(255,189,69,.35)}
+    .main-cta{
+      display:flex;
+      justify-content:center;
+      margin-top:54px;
+    }
+    .orange-btn{
+      border:0;
+      border-radius:999px;
+      background:var(--orange);
+      color:#fff;
+      font-weight:800;
+      font-size:27px;
+      line-height:1;
+      padding:12px 22px;
+      min-height:48px;
+      display:inline-flex;
+      align-items:center;
+      gap:13px;
+      cursor:pointer;
+      transition:.18s;
+      box-shadow:0 10px 22px rgba(0,0,0,.18);
+    }
+    .orange-btn:hover{background:var(--orange2);transform:translateY(-1px)}
+    .orange-btn small{font-size:22px}
+    .info-section{
+      border-top:1px solid rgba(255,255,255,.06);
+      background:#191919;
+      padding:48px 40px;
+    }
+    .info-grid{
+      max-width:1180px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:18px;
+    }
+    .info-card{
+      background:#202020;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      padding:22px;
+    }
+    .info-card h3{margin:0 0 8px;font-size:18px}
+    .info-card p{margin:0;color:var(--muted);line-height:1.55;font-size:14px}
+    .modal{
+      position:fixed;
+      inset:0;
+      z-index:100;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      background:rgba(0,0,0,.68);
+    }
+    .modal.open{display:flex}
+    .dialog{
+      width:min(980px,100%);
+      max-height:92vh;
+      overflow:auto;
+      background:#17202b;
+      border:1px solid rgba(255,255,255,.13);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+    }
+    .dialog-head{
+      position:sticky;
+      top:0;
+      z-index:2;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:14px;
+      padding:18px 22px;
+      background:rgba(23,32,43,.96);
+      backdrop-filter:blur(10px);
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    .dialog-title{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+    .dialog-title .bigicon{font-size:34px}
+    .dialog-title h2{margin:0;font-size:24px}
+    .dialog-title p{margin:3px 0 0;color:var(--muted);font-size:13px}
+    .close{
+      width:40px;height:40px;
+      border-radius:50%;
+      border:1px solid rgba(255,255,255,.12);
+      background:#111821;
+      color:#fff;
+      cursor:pointer;
+      font-size:22px;
+    }
+    .dialog-body{padding:22px}
+    .workspace{
+      display:grid;
+      grid-template-columns:1.05fr .95fr;
+      gap:18px;
+      align-items:start;
+    }
+    .box{
+      background:#111821;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:14px;
+      padding:18px;
+    }
+    .box h3{margin:0 0 12px;font-size:17px}
+    .drop{
+      border:2px dashed rgba(94,144,232,.46);
+      border-radius:14px;
+      padding:24px 18px;
+      text-align:center;
+      background:rgba(94,144,232,.06);
+      transition:.2s;
+    }
+    .drop.drag{border-color:var(--orange);background:rgba(237,135,0,.12)}
+    .drop strong{display:block;font-size:18px;margin-bottom:7px}
+    .drop p{margin:0 0 14px;color:var(--muted);font-size:14px}
+    .file-input{display:none}
+    .choose{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      border:0;
+      background:var(--orange);
+      color:#fff;
+      border-radius:999px;
+      padding:11px 16px;
+      font-weight:700;
+      cursor:pointer;
+    }
+    .file-list{
+      list-style:none;
+      margin:14px 0 0;
+      padding:0;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+    .file-list li{
+      display:flex;
+      gap:10px;
+      justify-content:space-between;
+      align-items:center;
+      border:1px solid rgba(255,255,255,.08);
+      background:#172230;
+      border-radius:10px;
+      padding:10px 12px;
+      color:#eaf0f8;
+      font-size:13px;
+    }
+    .file-list button{
+      border:0;background:transparent;color:#ff9090;cursor:pointer;font-size:16px;
+    }
+    .form-row{display:grid;gap:7px;margin-bottom:13px}
+    label{color:#dbe4ef;font-weight:600;font-size:13px}
+    input[type="text"],input[type="password"],input[type="number"],input[type="url"],select,textarea{
+      width:100%;
+      border:1px solid rgba(255,255,255,.12);
+      background:#0d131b;
+      color:#fff;
+      border-radius:10px;
+      padding:11px 12px;
+      outline:none;
+      transition:.15s;
+    }
+    textarea{min-height:115px;resize:vertical}
+    input:focus,select:focus,textarea:focus{
+      border-color:var(--blue);
+      box-shadow:0 0 0 4px rgba(94,144,232,.12);
+    }
+    .inline{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .check{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      color:var(--muted);
+      font-size:14px;
+      margin:8px 0;
+    }
+    .run{
+      width:100%;
+      border:0;
+      border-radius:12px;
+      background:var(--orange);
+      color:#fff;
+      padding:13px 16px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.15s;
+      margin-top:6px;
+    }
+    .run:hover{background:var(--orange2)}
+    .run:disabled{opacity:.5;cursor:not-allowed}
+    .secondary{
+      border:1px solid rgba(255,255,255,.13);
+      background:#172230;
+      color:#fff;
+      border-radius:10px;
+      padding:10px 12px;
+      cursor:pointer;
+    }
+    .status{
+      margin-top:14px;
+      min-height:36px;
+      border-radius:10px;
+      padding:11px 12px;
+      background:#0d131b;
+      border:1px solid rgba(255,255,255,.08);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.45;
+      white-space:pre-wrap;
+    }
+    .status.ok{border-color:rgba(85,199,121,.55);color:#c9ffd8}
+    .status.err{border-color:rgba(232,93,93,.7);color:#ffd0d0}
+    .downloads{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:12px;
+    }
+    .download-link{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:rgba(85,199,121,.13);
+      border:1px solid rgba(85,199,121,.38);
+      color:#d8ffe2;
+      border-radius:999px;
+      padding:9px 12px;
+      text-decoration:none;
+      font-weight:700;
+      font-size:13px;
+    }
+    .canvas-wrap{
+      background:#0d131b;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:12px;
+      padding:10px;
+      overflow:auto;
+      max-height:360px;
+    }
+    #signatureCanvas{
+      width:100%;
+      height:180px;
+      background:#fff;
+      border-radius:10px;
+      touch-action:none;
+      cursor:crosshair;
+    }
+    .hint{
+      color:var(--muted);
+      font-size:12px;
+      line-height:1.45;
+      margin-top:10px;
+    }
+    .page-mode-toggle{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      margin:14px 0;
+      padding:12px;
+      background:#0d131b;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.08);
+    }
+    .toggle-switch{
+      position:relative;
+      width:64px;
+      height:32px;
+      background:#2a3441;
+      border-radius:16px;
+      cursor:pointer;
+      transition:.3s;
+      border:2px solid rgba(255,255,255,.1);
+    }
+    .toggle-switch.on{
+      background:linear-gradient(135deg,#1e3aff,#0d25a8);
+      border-color:#3a5aff;
+      box-shadow:0 0 12px rgba(58,90,255,.4);
+    }
+    .toggle-knob{
+      position:absolute;
+      top:3px;
+      width:24px;
+      height:24px;
+      background:linear-gradient(180deg,#fff,#d0d5dc);
+      border-radius:50%;
+      transition:.3s;
+      left:4px;
+      box-shadow:0 2px 4px rgba(0,0,0,.3);
+    }
+    .toggle-switch.on .toggle-knob{
+      left:34px;
+    }
+    .toggle-label{
+      color:#fff;
+      font-weight:700;
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+    }
+    .toggle-label.off{opacity:.5}
+    .toggle-label.on{opacity:1;color:#5e90e8}
+    .page-preview-container{
+      margin-top:14px;
+      padding:14px;
+      background:#0d131b;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:12px;
+      display:none;
+    }
+    .page-preview-container.active{
+      display:block;
+    }
+    .page-preview-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+      gap:10px;
+      max-height:480px;
+      overflow-y:auto;
+    }
+    .page-preview-item{
+      background:#172230;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:8px;
+      padding:8px;
+      text-align:center;
+      cursor:pointer;
+      transition:.2s;
+    }
+    .page-preview-item:hover{
+      border-color:var(--blue);
+      background:#1d2a38;
+      transform:translateY(-2px);
+    }
+    .page-preview-item.selected{
+      border-color:var(--orange);
+      background:rgba(237,135,0,.15);
+      box-shadow:0 0 0 2px rgba(237,135,0,.3);
+    }
+    .page-preview-canvas{
+      width:100%;
+      height:160px;
+      background:#fff;
+      border-radius:6px;
+      margin-bottom:6px;
+      object-fit: contain;
+    }
+    .page-preview-label{
+      color:#b8c5d6;
+      font-size:12px;
+      font-weight:600;
+    }
+    .page-preview-actions{
+      display:flex;
+      gap:6px;
+      justify-content:center;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+    .page-preview-actions button{
+      font-size:11px;
+      padding:5px 9px;
+      border-radius:6px;
+      border:1px solid rgba(255,255,255,.12);
+      background:#172230;
+      color:#b8c5d6;
+      cursor:pointer;
+      transition:.15s;
+    }
+    .page-preview-actions button:hover{
+      background:#1d2a38;
+      color:#fff;
+    }
+    .page-preview-actions button.active{
+      background:var(--orange);
+      color:#fff;
+      border-color:var(--orange);
+    }
+    .toast{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      z-index:200;
+      background:#101820;
+      color:#fff;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius:14px;
+      padding:13px 15px;
+      box-shadow:var(--shadow);
+      transform:translateY(20px);
+      opacity:0;
+      pointer-events:none;
+      transition:.2s;
+      max-width:360px;
+    }
+    .toast.show{transform:translateY(0);opacity:1}
+    .empty{
+      text-align:center;
+      color:var(--muted);
+      padding:34px 10px;
+      border:1px dashed rgba(255,255,255,.13);
+      border-radius:14px;
+      grid-column:1/-1;
+    }
+    footer{
+      border-top:1px solid rgba(255,255,255,.06);
+      color:#8e99a7;
+      text-align:center;
+      padding:20px;
+      font-size:13px;
+      background:#171717;
+    }
+    @media(max-width:1200px){
+      .tools-grid{grid-template-columns:repeat(5,1fr)}
+    }
+    @media(max-width:860px){
+      .topbar-inner{padding:10px 16px;flex-wrap:wrap}
+      .brand{width:100%;justify-content:space-between}
+      .search{order:3;width:100%;max-width:none}
+      .hero{padding:18px 16px 0}
+      .subtitle{margin-bottom:22px}
+      .categories,.tools-wrap{padding-left:16px;padding-right:16px}
+      .tools-grid{grid-template-columns:repeat(3,1fr)}
+      h1{font-size:31px}
+      .workspace{grid-template-columns:1fr}
+      .info-grid{grid-template-columns:1fr}
+      .orange-btn{font-size:22px}
+    }
+    @media(max-width:540px){
+      .tools-grid{grid-template-columns:repeat(2,1fr)}
+      .tool-card{min-height:106px}
+      .tool-title{font-size:14px}
+      .top-actions{width:100%}
+      .pill-btn{flex:1}
+      .dialog{border-radius:14px}
+      .dialog-body{padding:15px}
+      .dialog-head{padding:14px}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <!-- Logo Güncellendi -->
+      <a href="#" class="brand" aria-label="ModuPDF Ana Sayfa">
+        <img src="https://raw.githubusercontent.com/oxiloncode/moduikblog/refs/heads/main/2.png?token=GHSAT0AAAAAAECSHFVMO6XXBA4YDV3U5D5O2TBUTKA" alt="ModuPDF" class="brand-logo">
+      </a>
+      
+      <div class="search">
+        <input id="searchInput" type="search" placeholder="Araç ara: birleştirme, OCR, imza, görüntü..." autocomplete="off">
+        <span>🔎</span>
+      </div>
+      <div class="top-actions">
+        <button id="favFilter" class="pill-btn" type="button">★ Favoriler</button>
+        <button id="resetFilter" class="pill-btn" type="button">Tümü</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="mascot">🛠️</div>
+      <h1>ModuPDF Araçları</h1>
+      <p class="subtitle">PDF dosyalarınızı tarayıcınızda ücretsiz düzenleyin</p>
+    </section>
+
+    <nav class="categories" id="categories"></nav>
+
+    <section class="tools-wrap">
+      <div class="tools-grid" id="toolsGrid"></div>
+      <div class="main-cta">
+        <button class="orange-btn" id="allToolsBtn" type="button"><small>▦</small> Tüm araçlar</button>
+      </div>
+    </section>
+
+    <section class="info-section">
+      <div class="info-grid">
+        <div class="info-card">
+          <h3>Yerelde çalışır</h3>
+          <p>Bu tek dosyalık index.html sayfasını tarayıcıda açarak PDF işlemlerini yapabilirsiniz. Dosyalarınız çoğu işlemde doğrudan tarayıcı içinde işlenir.</p>
+        </div>
+        <div class="info-card">
+          <h3>Gerçek araçlar</h3>
+          <p>PDF birleştirme, sayfa ayıklama, sayfa silme, döndürme, numaralandırma, filigran, imza, görüntüye çevirme ve OCR gibi araçlar çalışır durumdadır.</p>
+        </div>
+        <div class="info-card">
+          <h3>Mobil uyumlu</h3>
+          <p>Kartlar, modal çalışma alanı, sürükle-bırak yükleme, favoriler ve arama özelliği masaüstü ve mobil ekranlar için optimize edilmiştir.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="modal" aria-hidden="true">
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="dialog-head">
+        <div class="dialog-title">
+          <div class="bigicon" id="modalIcon">📄</div>
+          <div>
+            <h2 id="modalTitle">PDF Aracı</h2>
+            <p id="modalDesc">Dosyanızı seçin ve işlemi başlatın.</p>
+          </div>
+        </div>
+        <button class="close" id="closeModal" type="button" aria-label="Kapat">×</button>
+      </div>
+      <div class="dialog-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <footer>
+    ModuPDF • Tarayıcı tabanlı PDF araçları
+  </footer>
+
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+    const { PDFDocument, StandardFonts, degrees } = PDFLib;
+    const { rgb } = PDFLib;
+    const { PDFName, PDFHexString, PDFString, PDFDict, PDFArray, PDFRawStream, PDFNumber } = PDFLib;
+
+    const tools = [
+      {id:"merge", title:"PDF birleştirme", icon:"🗂️", cat:"Temel", mode:"merge", desc:"Birden fazla PDF dosyasını tek PDF halinde birleştirin."},
+      {id:"split", title:"PDF bölme", icon:"✂️", cat:"Temel", mode:"extract", desc:"Belirttiğiniz sayfaları veya aralıkları yeni PDF olarak ayıklayın."},
+      {id:"compress", title:"PDF küçültme", icon:"🗜️", cat:"Optimize", mode:"compress", desc:"PDF dosyasını yeniden kaydederek tarayıcı içinde optimize edin."},
+      {id:"edit", title:"PDF düzenleme", icon:"✏️", cat:"Düzenle", mode:"addText", desc:"PDF sayfalarına metin ekleyin."},
+      {id:"sign", title:"PDF imzalama", icon:"🖊️", cat:"Düzenle", mode:"sign", desc:"İmzanızı çizin ve PDF sayfalarına ekleyin."},
+      {id:"converter", title:"PDF Dönüştürücü", icon:"🔄", cat:"Dönüştür", mode:"converter", desc:"PDF'yi görüntüye veya görüntüleri PDF'ye dönüştürün."},
+      {id:"imagesToPdf", title:"Görüntüleri PDF'ye", icon:"🖼️", cat:"Dönüştür", mode:"imagesToPdf", desc:"JPG/PNG görsellerden PDF oluşturun."},
+      {id:"pdfToImages", title:"PDF'yi görüntülere", icon:"🏞️", cat:"Dönüştür", mode:"pdfToImages", desc:"PDF sayfalarını PNG görüntüler olarak dışa aktarın."},
+      {id:"extractImages", title:"PDF dosyalarından görüntüleri ayıkla", icon:"📷", cat:"Dönüştür", mode:"pdfToImages", desc:"Sayfaları yüksek kaliteli görüntüler olarak ZIP halinde alın."},
+      {id:"protect", title:"PDF şifreleme", icon:"🔐", cat:"Güvenlik", mode:"protect", desc:"PDF dosyasını gerçek şekilde şifreleyin; belirlediğiniz şifre girilmeden dosya açılamaz."},
+      {id:"unlock", title:"PDF şifre kaldırma", icon:"🔓", cat:"Güvenlik", mode:"unlock", desc:"Şifreli PDF'lerin mevcut şifresini girerek kilidini tamamen kaldırın."},
+      {id:"rotate", title:"PDF döndürme", icon:"🔁", cat:"Düzenle", mode:"rotate", desc:"Tüm sayfaları veya seçili sayfaları 90/180/270 derece döndürün."},
+      {id:"deletePages", title:"PDF sayfa silme", icon:"🗑️", cat:"Sayfa", mode:"delete", desc:"İstemediğiniz sayfaları PDF'den kaldırın."},
+      {id:"extractPages", title:"PDF sayfalarını ayıkla", icon:"📑", cat:"Sayfa", mode:"extract", desc:"Seçili sayfaları yeni bir PDF dosyasına çıkarın."},
+      {id:"sortPages", title:"PDF sayfalarını sırala", icon:"🔢", cat:"Sayfa", mode:"reorder", desc:"Sayfaları istediğiniz sıraya göre yeniden düzenleyin."},
+      {id:"webToPdf", title:"Web Sayfasından PDF'ye Dönüştürme", icon:"🌐", cat:"Dönüştür", mode:"webToPdf", desc:"URL ve notlardan arşivlenebilir PDF sayfası oluşturun."},
+      {id:"ocr", title:"PDF OCR", icon:"👁️", cat:"OCR", mode:"ocr", desc:"Görüntü dosyalarından Türkçe/İngilizce metin tanıma yapın."},
+      {id:"watermark", title:"Filigran ekleme", icon:"💧", cat:"Düzenle", mode:"watermark", desc:"PDF sayfalarına yarı saydam filigran ekleyin."},
+      {id:"pageNumbers", title:"Sayfa numarası ekleme", icon:"123", cat:"Sayfa", mode:"pageNumbers", desc:"PDF sayfalarına otomatik sayfa numarası ekleyin."},
+      {id:"addToPdf", title:"PDF üzerine ekle", icon:"➕", cat:"Düzenle", mode:"addText", desc:"PDF üzerine başlık, not veya açıklama metni ekleyin."},
+      {id:"compare", title:"PDF dosyalarını karşılaştır", icon:"⚖️", cat:"Analiz", mode:"compare", desc:"İki PDF'nin metnini çıkarıp fark özetini görün."},
+      {id:"webOptimize", title:"PDF'yi Web için optimize et", icon:"🚀", cat:"Optimize", mode:"compress", desc:"PDF'yi web paylaşımına uygun şekilde yeniden paketleyin."},
+      {id:"redact", title:"PDF yazı karalama", icon:"█", cat:"Güvenlik", mode:"redact", desc:"Seçtiğiniz sayfalara siyah karalama alanı ekleyin."},
+      {id:"create", title:"PDF oluşturma", icon:"✨", cat:"Temel", mode:"createPdf", desc:"Metinden hızlıca yeni PDF dosyası oluşturun."}
+    ];
+
+    const state = {
+      search:"",
+      cat:"Tümü",
+      favOnly:false,
+      files:[],
+      activeTool:null,
+      signatureCanvas:null,
+      sigCtx:null,
+      drawing:false,
+      currentPdfDoc: null,
+      isPageModeOn: false
+    };
+
+    const grid = document.getElementById("toolsGrid");
+    const categories = document.getElementById("categories");
+    const searchInput = document.getElementById("searchInput");
+    const favFilter = document.getElementById("favFilter");
+    const resetFilter = document.getElementById("resetFilter");
+    const modal = document.getElementById("modal");
+    const modalBody = document.getElementById("modalBody");
+    const toast = document.getElementById("toast");
+
+    let favorites = JSON.parse(localStorage.getItem("modupdfFavorites") || "[]");
+
+    function saveFavorites(){ localStorage.setItem("modupdfFavorites", JSON.stringify(favorites)); }
+    function isFav(id){ return favorites.includes(id); }
+    function toggleFav(id){
+      favorites = isFav(id) ? favorites.filter(x=>x!==id) : [...favorites,id];
+      saveFavorites();
+      renderTools();
+      showToast(isFav(id) ? "Favorilere eklendi." : "Favorilerden çıkarıldı.");
+    }
+
+    function renderCategories(){
+      const cats = ["Tümü", ...Array.from(new Set(tools.map(t=>t.cat)))];
+      categories.innerHTML = cats.map(c=>`<button class="cat ${state.cat===c?"active":""}" type="button" data-cat="${c}">${c}</button>`).join("");
+      categories.querySelectorAll(".cat").forEach(btn=>{
+        btn.addEventListener("click",()=>{
+          state.cat = btn.dataset.cat;
+          renderCategories();
+          renderTools();
+        });
+      });
+    }
+
+    function renderTools(){
+      const q = state.search.toLowerCase().trim();
+      let filtered = tools.filter(t=>{
+        const matchQ = !q || (t.title+" "+t.desc+" "+t.cat).toLowerCase().includes(q);
+        const matchCat = state.cat==="Tümü" || t.cat===state.cat;
+        const matchFav = !state.favOnly || isFav(t.id);
+        return matchQ && matchCat && matchFav;
+      });
+      if(!filtered.length){
+        grid.innerHTML = `<div class="empty">Sonuç bulunamadı. Arama veya filtreleri temizleyin.</div>`;
+        return;
+      }
+      grid.innerHTML = filtered.map(t=>`
+        <article class="tool-card" tabindex="0" role="button" data-id="${t.id}" aria-label="${t.title}">
+          <button class="star ${isFav(t.id)?"saved":""}" type="button" data-star="${t.id}" aria-label="Favori">☆</button>
+          <div class="icon">${t.icon}</div>
+          <div class="tool-title">${t.title}</div>
+        </article>
+      `).join("");
+      grid.querySelectorAll(".tool-card").forEach(card=>{
+        card.addEventListener("click",(e)=>{
+          if(e.target.closest(".star")) return;
+          openTool(card.dataset.id);
+        });
+        card.addEventListener("keydown",(e)=>{
+          if(e.key==="Enter" || e.key===" "){ e.preventDefault(); openTool(card.dataset.id); }
+        });
+      });
+      grid.querySelectorAll(".star").forEach(star=>{
+        star.addEventListener("click",(e)=>{
+          e.stopPropagation();
+          toggleFav(star.dataset.star);
+        });
+      });
+    }
+
+    searchInput.addEventListener("input", e=>{ state.search=e.target.value; renderTools(); });
+    favFilter.addEventListener("click",()=>{
+      state.favOnly = !state.favOnly;
+      favFilter.classList.toggle("active", state.favOnly);
+      renderTools();
+    });
+    resetFilter.addEventListener("click",()=>{
+      state.search=""; state.cat="Tümü"; state.favOnly=false;
+      searchInput.value="";
+      favFilter.classList.remove("active");
+      renderCategories(); renderTools();
+    });
+    document.getElementById("allToolsBtn").addEventListener("click",()=>{
+      state.cat="Tümü"; state.favOnly=false; state.search="";
+      searchInput.value=""; favFilter.classList.remove("active");
+      renderCategories(); renderTools();
+      window.scrollTo({top:110, behavior:"smooth"});
+    });
+
+    function openTool(id){
+      const tool = tools.find(t=>t.id===id);
+      state.activeTool = tool;
+      state.files = [];
+      document.getElementById("modalIcon").textContent = tool.icon;
+      document.getElementById("modalTitle").textContent = tool.title;
+      document.getElementById("modalDesc").textContent = tool.desc;
+      modalBody.innerHTML = buildToolHtml(tool);
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden","false");
+      setupUploader(tool);
+      setupToolEvents(tool);
+    }
+
+    function closeModal(){
+      modal.classList.remove("open");
+      modal.setAttribute("aria-hidden","true");
+      modalBody.innerHTML="";
+      state.files=[];
+      state.currentPdfDoc = null;
+      state.isPageModeOn = false;
+    }
+    document.getElementById("closeModal").addEventListener("click", closeModal);
+    modal.addEventListener("click", e=>{ if(e.target===modal) closeModal(); });
+    document.addEventListener("keydown", e=>{ if(e.key==="Escape" && modal.classList.contains("open")) closeModal(); });
+
+    document.addEventListener('click', (e) => {
+        const switchEl = e.target.closest('#pageModeSwitch');
+        if(switchEl) {
+            state.isPageModeOn = !state.isPageModeOn;
+            const labelOff = document.getElementById('pageModeLabelOff');
+            const labelOn = document.getElementById('pageModeLabelOn');
+
+            if(state.isPageModeOn) {
+                switchEl.classList.add('on');
+                labelOff.style.display = 'none';
+                labelOn.style.display = 'inline';
+            } else {
+                switchEl.classList.remove('on');
+                labelOff.style.display = 'inline';
+                labelOn.style.display = 'none';
+            }
+            if(state.currentPdfDoc) renderPreview();
+        }
+    });
+
+    async function handlePdfPreview(file) {
+      const toggle = document.getElementById('pageModeToggle');
+      const container = document.getElementById('pagePreviewContainer');
+      if(!toggle || !container) return;
+
+      toggle.style.display = 'flex';
+      container.classList.add('active');
+
+      const arrayBuffer = await file.arrayBuffer();
+      // Şifreli PDF'leri okurken hata fırlatmasını önlemek için basit bir hata yakalama
+      try {
+        state.currentPdfDoc = await pdfjsLib.getDocument({data: arrayBuffer}).promise;
+        renderPreview();
+      } catch(err) {
+        const previewGrid = document.getElementById('pagePreviewGrid');
+        if(previewGrid) previewGrid.innerHTML = '<div style="color:var(--danger); grid-column:1/-1; text-align:center; padding: 20px;">Bu PDF şifreli olduğu için önizleme yapılamıyor.</div>';
+      }
+    }
+
+    async function renderPreview() {
+      const grid = document.getElementById('pagePreviewGrid');
+      if(!grid || !state.currentPdfDoc) return;
+      grid.innerHTML = '<div style="color:var(--muted); grid-column:1/-1; text-align:center; padding: 20px;">Sayfalar işleniyor...</div>';
+
+      const pagesToRender = state.isPageModeOn ? state.currentPdfDoc.numPages : 1;
+      grid.innerHTML = '';
+
+      for(let i=1; i<=pagesToRender; i++) {
+        const page = await state.currentPdfDoc.getPage(i);
+        const unscaledViewport = page.getViewport({scale: 1});
+        const scale = 140 / unscaledViewport.width; 
+        const viewport = page.getViewport({scale});
+
+        const canvas = document.createElement('canvas');
+        canvas.className = 'page-preview-canvas';
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext('2d');
+        await page.render({canvasContext: ctx, viewport}).promise;
+
+        const item = document.createElement('div');
+        item.className = 'page-preview-item';
+        item.innerHTML = `<div class="page-preview-label">Sayfa ${i}</div>`;
+        item.insertBefore(canvas, item.firstChild);
+
+        item.addEventListener('click', () => {
+            item.classList.toggle('selected');
+        });
+
+        grid.appendChild(item);
+      }
+    }
+
+    function acceptFor(mode){
+      if(mode==="imagesToPdf" || mode==="ocr") return "image/png,image/jpeg,image/webp";
+      if(mode==="converter") return "application/pdf,image/png,image/jpeg,image/webp";
+      return "application/pdf";
+    }
+    function multipleFor(mode){
+      return ["merge","imagesToPdf","converter","compare"].includes(mode) ? "multiple" : "";
+    }
+
+    function buildToolHtml(tool){
+      if(tool.mode==="createPdf"){
+        return `
+        <div class="workspace">
+          <div class="box">
+            <h3>PDF içeriği</h3>
+            <div class="form-row"><label>Başlık</label><input id="pdfTitleInput" type="text" value="Yeni PDF Belgesi"></div>
+            <div class="form-row"><label>Metin</label><textarea id="createText">Merhaba! Bu PDF tarayıcıda oluşturuldu.
+
+Kendi metninizi buraya yazın. Sayfa doldukça otomatik yeni sayfa açılır.</textarea></div>
+            <button class="run" id="runTool">PDF oluştur ve indir</button>
+          </div>
+          <div class="box"><h3>Durum</h3><div id="status" class="status">Hazır.</div><div id="downloads" class="downloads"></div></div>
+        </div>`;
+      }
+
+      const uploadTitle = tool.mode==="compare" ? "İki PDF dosyası seçin" : "Dosyaları buraya bırakın";
+      const extra = optionsHtml(tool.mode);
+      return `
+        <div class="workspace">
+          <div class="box">
+            <h3>Dosya seçimi</h3>
+            <div class="drop" id="dropZone">
+              <strong>${uploadTitle}</strong>
+              <p>Bilgisayardan seçebilir veya bu alana sürükleyip bırakabilirsiniz.</p>
+              <button class="choose" id="chooseBtn" type="button">📁 Dosya seç</button>
+              <input class="file-input" id="fileInput" type="file" accept="${acceptFor(tool.mode)}" ${multipleFor(tool.mode)}>
+            </div>
+            <ul class="file-list" id="fileList"></ul>
+            <div class="page-mode-toggle" id="pageModeToggle" style="display:none">
+              <div class="toggle-switch" id="pageModeSwitch" role="button" tabindex="0">
+                <div class="toggle-knob"></div>
+              </div>
+              <span class="toggle-label off" id="pageModeLabelOff">OFF</span>
+              <span class="toggle-label on" id="pageModeLabelOn" style="display:none">ON</span>
+              <span style="color:var(--muted);font-size:13px;margin-left:8px">Sayfa Modu</span>
+            </div>
+            <div class="page-preview-container" id="pagePreviewContainer">
+              <h3 style="margin:0 0 12px;font-size:15px;color:#fff">PDF Sayfaları</h3>
+              <div class="page-preview-grid" id="pagePreviewGrid"></div>
+              <div class="page-preview-actions" id="pagePreviewActions" style="display:none">
+                <button type="button" id="selectAllPages">Tümünü Seç</button>
+                <button type="button" id="clearSelection">Seçimi Temizle</button>
+              </div>
+            </div>
+            <p class="hint">Not: Büyük PDF'lerde işlem süresi tarayıcı ve cihaz performansına bağlıdır.</p>
+          </div>
+          <div class="box">
+            <h3>Ayarlar</h3>
+            ${extra}
+            <button class="run" id="runTool" type="button">İşlemi başlat</button>
+            <div id="status" class="status">Dosya bekleniyor.</div>
+            <div id="downloads" class="downloads"></div>
+          </div>
+        </div>`;
+    }
+
+    function optionsHtml(mode){
+      switch(mode){
+        case "merge": return `<p class="hint">PDF'ler listede görünen sırayla birleştirilir.</p>`;
+        case "extract": return `<div class="form-row"><label>Sayfalar / aralıklar</label><input id="pagesInput" type="text" placeholder="Örn: 1,3-5,8"></div>`;
+        case "delete": return `<div class="form-row"><label>Silinecek sayfalar</label><input id="pagesInput" type="text" placeholder="Örn: 2,4-6"></div>`;
+        case "rotate": return `<div class="form-row"><label>Döndürme derecesi</label><select id="degreeInput"><option value="90">90° sağ</option><option value="180">180°</option><option value="270">270° sağ</option></select></div><div class="form-row"><label>Sayfalar</label><input id="pagesInput" type="text" placeholder="Boş bırakırsanız tüm sayfalar"></div>`;
+        case "reorder": return `<div class="form-row"><label>Yeni sayfa sırası</label><input id="orderInput" type="text" placeholder="Örn: 3,1,2,4"></div>`;
+        case "compress": return `<label class="check"><input id="metaClean" type="checkbox" checked> Meta verileri sadeleştir</label>`;
+        case "imagesToPdf": return `<label class="check"><input id="a4Input" type="checkbox" checked> Görselleri A4 sayfaya sığdır</label><div class="form-row"><label>Kenar boşluğu</label><input id="marginInput" type="number" value="24" min="0" max="100"></div>`;
+        case "pdfToImages": return `<div class="form-row"><label>Çözünürlük ölçeği</label><select id="scaleInput"><option value="1">Normal</option><option value="1.5" selected>Yüksek</option><option value="2">Çok yüksek</option></select></div>`;
+        case "watermark": return `<div class="form-row"><label>Filigran metni</label><input id="textInput" type="text" value="ÖRNEK"></div><div class="form-row"><label>Yazı boyutu</label><input id="sizeInput" type="number" value="54"></div>`;
+        case "pageNumbers": return `<div class="form-row"><label>Başlangıç numarası</label><input id="startInput" type="number" value="1"></div><div class="form-row"><label>Konum</label><select id="posInput"><option value="bottom-center">Alt orta</option><option value="bottom-right">Alt sağ</option><option value="top-right">Üst sağ</option></select></div>`;
+        case "addText": return `<div class="form-row"><label>Eklenecek metin</label><textarea id="textInput">Buraya notunuzu yazın</textarea></div><div class="inline"><div class="form-row" style="flex:1"><label>X</label><input id="xInput" type="number" value="50"></div><div class="form-row" style="flex:1"><label>Y</label><input id="yInput" type="number" value="740"></div></div><div class="form-row"><label>Sayfalar</label><input id="pagesInput" type="text" placeholder="Boş bırakırsanız ilk sayfa"></div>`;
+        case "sign": return `<div class="canvas-wrap"><canvas id="signatureCanvas" width="760" height="220"></canvas></div><div class="inline" style="margin-top:10px"><button class="secondary" id="clearSig" type="button">İmzayı temizle</button></div><div class="form-row" style="margin-top:12px"><label>Sayfalar</label><input id="pagesInput" type="text" placeholder="Boş bırakırsanız tüm sayfalar"></div>`;
+        case "redact": return `<div class="inline"><div class="form-row" style="flex:1"><label>X</label><input id="xInput" type="number" value="60"></div><div class="form-row" style="flex:1"><label>Y</label><input id="yInput" type="number" value="650"></div></div><div class="inline"><div class="form-row" style="flex:1"><label>Genişlik</label><input id="wInput" type="number" value="250"></div><div class="form-row" style="flex:1"><label>Yükseklik</label><input id="hInput" type="number" value="45"></div></div><div class="form-row"><label>Sayfalar</label><input id="pagesInput" type="text" placeholder="Boş bırakırsanız ilk sayfa"></div>`;
+        case "compare": return `<p class="hint">İki PDF seçin. Metinler çıkarılıp farklar özetlenir.</p>`;
+        case "ocr": return `<div class="form-row"><label>Dil</label><select id="langInput"><option value="tur+eng" selected>Türkçe + İngilizce</option><option value="tur">Türkçe</option><option value="eng">İngilizce</option></select></div>`;
+        case "webToPdf": return `<div class="form-row"><label>Web sayfası URL</label><input id="urlInput" type="url" placeholder="https://ornek.com"></div><div class="form-row"><label>Not / açıklama</label><textarea id="webNote">Bu PDF, belirtilen web sayfasını arşivlemek için oluşturuldu.</textarea></div>`;
+        case "protect": return `<div class="form-row"><label>PDF Şifresi</label><input id="protectPassword" type="password" placeholder="Açılış şifresini belirleyin"></div><div class="form-row"><label>Şifre (Tekrar)</label><input id="protectPasswordConfirm" type="password" placeholder="Şifreyi tekrar girin"></div><p class="hint">PDF, girdiğiniz şifreyle gerçek şekilde şifrelenecektir. Bu şifre girilmeden dosya hiçbir PDF okuyucuda açılamaz.</p>`;
+        case "unlock": return `<div class="form-row"><label>Mevcut PDF Şifresi</label><input id="pdfPassword" type="password" placeholder="PDF'in şu anki şifresini yazın"></div><p class="hint">Şifreli PDF'i yükleyin ve şifresini girin. Sistem kilidi açıp dosyayı tamamen şifresiz olarak kaydedecektir.</p>`;
+        case "converter": return `<p class="hint">PDF seçerseniz resme, resim seçerseniz PDF'ye dönüşür.</p>`;
+        default: return `<p class="hint">Ayarları belirleyip işlemi başlatın.</p>`;
+      }
+    }
+
+    function setupUploader(tool){
+      const input = document.getElementById("fileInput");
+      if(!input) return;
+      const drop = document.getElementById("dropZone");
+      document.getElementById("chooseBtn").addEventListener("click",()=>input.click());
+      input.addEventListener("change",()=>addFiles([...input.files], tool.mode));
+      ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.add("drag"); }));
+      ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{ e.preventDefault(); drop.classList.remove("drag"); }));
+      drop.addEventListener("drop",e=>addFiles([...e.dataTransfer.files], tool.mode));
+    }
+
+    function addFiles(files, mode){
+      if(!multipleFor(mode)) state.files = [];
+      if(mode==="compare") state.files = [];
+      const accepted = files.filter(f=>{
+        if(mode==="imagesToPdf" || mode==="ocr") return f.type.startsWith("image/");
+        if(mode==="converter") return f.type==="application/pdf" || f.type.startsWith("image/");
+        return f.type==="application/pdf" || f.name.toLowerCase().endsWith(".pdf");
+      });
+      if(mode==="compare") state.files = accepted.slice(0,2);
+      else state.files.push(...accepted);
+      renderFileList();
+      setStatus(accepted.length ? `${accepted.length} dosya eklendi.` : "Uygun dosya bulunamadı.", accepted.length ? "ok" : "err");
+
+      const firstPdf = accepted.find(f => f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf"));
+      if(firstPdf && mode !== "compare" && mode !== "imagesToPdf") {
+          handlePdfPreview(firstPdf);
+      } else {
+          const toggle = document.getElementById('pageModeToggle');
+          const container = document.getElementById('pagePreviewContainer');
+          if(toggle) toggle.style.display = 'none';
+          if(container) container.classList.remove('active');
+          state.currentPdfDoc = null;
+      }
+    }
+
+    function renderFileList(){
+      const list = document.getElementById("fileList");
+      if(!list) return;
+      list.innerHTML = state.files.map((f,i)=>`
+        <li><span>${i+1}. ${escapeHtml(f.name)} <small>(${formatBytes(f.size)})</small></span><button type="button" data-remove="${i}">×</button></li>
+      `).join("");
+      list.querySelectorAll("button").forEach(btn=>{
+        btn.addEventListener("click",()=>{
+          state.files.splice(Number(btn.dataset.remove),1);
+          renderFileList();
+        });
+      });
+    }
+
+    function setupToolEvents(tool){
+      if(tool.mode==="sign") setupSignature();
+      const run = document.getElementById("runTool");
+      if(run) run.addEventListener("click",()=>runTool(tool));
+    }
+
+    function setupSignature(){
+      const canvas = document.getElementById("signatureCanvas");
+      if(!canvas) return;
+      const ctx = canvas.getContext("2d");
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.strokeStyle = "#111";
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      state.signatureCanvas = canvas;
+      state.sigCtx = ctx;
+      function pos(e){
+        const r = canvas.getBoundingClientRect();
+        const p = e.touches ? e.touches[0] : e;
+        return {x:(p.clientX-r.left)*(canvas.width/r.width), y:(p.clientY-r.top)*(canvas.height/r.height)};
+      }
+      function down(e){ e.preventDefault(); state.drawing=true; const p=pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }
+      function move(e){ if(!state.drawing) return; e.preventDefault(); const p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); }
+      function up(){ state.drawing=false; }
+      canvas.addEventListener("mousedown",down); canvas.addEventListener("mousemove",move); window.addEventListener("mouseup",up);
+      canvas.addEventListener("touchstart",down,{passive:false}); canvas.addEventListener("touchmove",move,{passive:false}); window.addEventListener("touchend",up);
+      document.getElementById("clearSig").addEventListener("click",()=>{ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);});
+    }
+
+    async function runTool(tool){
+      clearDownloads();
+      setStatus("İşlem başlatıldı...");
+      const btn = document.getElementById("runTool");
+      btn.disabled = true;
+      try{
+        switch(tool.mode){
+          case "merge": await mergePdfs(); break;
+          case "extract": await extractPages(false); break;
+          case "delete": await deletePages(); break;
+          case "rotate": await rotatePdf(); break;
+          case "reorder": await reorderPdf(); break;
+          case "compress": await compressPdf(); break;
+          case "imagesToPdf": await imagesToPdf(); break;
+          case "pdfToImages": await pdfToImages(); break;
+          case "watermark": await watermarkPdf(); break;
+          case "pageNumbers": await pageNumbersPdf(); break;
+          case "addText": await addTextPdf(); break;
+          case "sign": await signPdf(); break;
+          case "redact": await redactPdf(); break;
+          case "compare": await comparePdfs(); break;
+          case "ocr": await ocrImage(); break;
+          case "webToPdf": await webToPdf(); break;
+          case "protect": await protectPdf(); break;
+          case "unlock": await unlockPdf(); break;
+          case "converter": await converter(); break;
+          case "createPdf": await createPdf(); break;
+        }
+      }catch(err){
+        console.error(err);
+        setStatus("Hata: " + (err.message || err), "err");
+      }finally{
+        btn.disabled = false;
+      }
+    }
+
+    async function mergePdfs(){
+      requireFiles(2);
+      const out = await PDFDocument.create();
+      for(const file of state.files){
+        const src = await PDFDocument.load(await file.arrayBuffer(), {ignoreEncryption:true});
+        const pages = await out.copyPages(src, src.getPageIndices());
+        pages.forEach(p=>out.addPage(p));
+      }
+      await savePdf(out, "birlesik-pdf.pdf", "PDF dosyaları başarıyla birleştirildi.");
+    }
+
+    async function extractPages(){
+      requireFiles(1);
+      const src = await PDFDocument.load(await state.files[0].arrayBuffer(), {ignoreEncryption:true});
+      const idx = parsePages(document.getElementById("pagesInput").value, src.getPageCount());
+      if(!idx.length) throw new Error("Lütfen ayıklanacak sayfaları yazın.");
+      const out = await PDFDocument.create();
+      const pages = await out.copyPages(src, idx);
+      pages.forEach(p=>out.addPage(p));
+      await savePdf(out, "ayiklanan-sayfalar.pdf", `${idx.length} sayfa ayıklandı.`);
+    }
+
+    async function deletePages(){
+      requireFiles(1);
+      const src = await PDFDocument.load(await state.files[0].arrayBuffer(), {ignoreEncryption:true});
+      const del = new Set(parsePages(document.getElementById("pagesInput").value, src.getPageCount()));
+      if(!del.size) throw new Error("Silinecek sayfaları yazın.");
+      const keep = src.getPageIndices().filter(i=>!del.has(i));
+      if(!keep.length) throw new Error("Tüm sayfalar silinemez.");
+      const out = await PDFDocument.create();
+      const pages = await out.copyPages(src, keep);
+      pages.forEach(p=>out.addPage(p));
+      await savePdf(out, "sayfalari-silinmis.pdf", `${del.size} sayfa silindi.`);
+    }
+
+    async function rotatePdf(){
+      requireFiles(1);
+      const pdf = await PDFDocument.load(await state.files[0].arrayBuffer(), {ignoreEncryption:true});
+      const count = pdf.getPageCount();
+      const input = document.getElementById("pagesInput").value.trim();
+      const idx = input ? parsePages(input, count) : pdf.getPageIndices();
+      const deg = Number(document.getElementById("degreeInput").value);
+      idx.forEach(i=>{
+        const p = pdf.getPage(i);
+        const current = p.getRotation().angle || 0;
+        p.setRotation(degrees((current + deg) % 360));
+      });
+      await savePdf(pdf, "dondurulmus-pdf.pdf", `${idx.length} sayfa döndürüldü.`);
+    }
+
+    async function reorderPdf(){
+      requireFiles(1);
+      const src = await PDFDocument.load(await state.files[0].arrayBuffer(), {ignoreEncryption:true});
+      const count = src.getPageCount();
+      const orderRaw = document.getElementById("orderInput").value.trim();
+      if(!orderRaw) throw new Error("Yeni sayfa sırasını yazın.");
+      let idx = orderRaw.split(",").map(x=>Number(x.trim())-1).filter(i=>i>=0 && i<count);
+      const used = new Set(idx);
+      for(let i=0;i<count;i++) if(!used.has(i)) idx.push(i);
+      const out = await PDFDocument.create();
+      const pages = await out.copyPages(src, idx);
+      pages.forEach(p=>out.addPage(p));
+      await savePdf(out, "siralanmis-pdf.pdf", "Sayfalar yeniden sıralandı.");
+    }
+
+    async function compressPdf(){
+      requireFiles(1);
+      const pdf = await PDFDocument.load(await state.files[0].arrayBuffer(), {ignoreEncryption:true});
+      if(document.getElementById("metaClean")?.checked){
+        pdf.setTitle("");
+        pdf.setAuthor("");
+        pdf.setSubject("");
+        pdf.setKeywords([]);
+        pdf.setProducer("ModuPDF");
+        pdf.setCreator("ModuPDF");
+      }
+      const bytes = await pdf.save({useObjectStreams:true, addDefaultPage:false});
+      makeDownload(bytes, "optimize-pdf.pdf", "application/pdf");
+      const oldSize = state.files[0].size;
+      const diff = oldSize - bytes.length;
+      setStatus(`PDF yeniden paketlendi.\nÖnceki: ${formatBytes(oldSize)}\nYeni: ${formatBytes(bytes.length)}\nFark: ${diff>=0?"-":"+"}${formatBytes(Math.abs(diff))}`, "ok");
+    }
+
+    async function unlockPdf(){
+      requireFiles(1);
+      const pass = document.getElementById("pdfPassword")?.value || "";
+      const srcBytes = await state.files[0].arrayBuffer();
+      const bytes = await decryptPdfWithPassword(new Uint8Array(srcBytes), pass);
+      makeDownload(bytes, "sifresi-kaldirilmis.pdf", "application/pdf");
+      setStatus("Şifre başarıyla kaldırıldı! Yeni dosyayı şifresiz olarak indirebilirsiniz.", "ok");
+    }
+
+    async function imagesToPdf(){
+      requireFiles(1);
+      const pdf = await PDFDocument.create();
+      const a4 = document.getElementById("a4Input")?.checked ?? true;
+      const margin = Number(document.getElementById("marginInput")?.value || 24);
+      for(const file of state.files){
+        const bytes = await file.arrayBuffer();
+        let img;
+        if(file.type.includes("png")) img = await pdf.embedPng(bytes);
+        else img = await pdf.embedJpg(bytes);
+        const iw = img.width, ih = img.height;
+        let page, pw, ph;
+        if(a4){ pw=595.28; ph=841.89; page=pdf.addPage([pw,ph]); }
+        else { pw=iw; ph=ih; page=pdf.addPage([pw,ph]); }
+        const scale = Math.min((pw-margin*2)/iw, (ph-margin*2)/ih);
+        const w = iw*scale, h = ih*scale;
+        page.drawImage(img,{x:(pw-w)/2,y:(ph-h)/2,width:w,height:h});
+      }
+      await savePdf(pdf, "gorsellerden-pdf.pdf", `${state.files.length} görsel PDF'ye dönüştürüldü.`);
+    }
+
+    async function pdfToImages(){
+      requireFiles(1);
+      const scale = Number(document.getElementById("scaleInput")?.value || 1.5);
+      const data = await state.files[0].arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({data}).promise;
+      const zip = new JSZip();
+      for(let i=1;i<=pdf.numPages;i++){
+        setStatus(`Sayfa görüntüye dönüştürülüyor: ${i}/${pdf.numPages}`);
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({scale});
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d");
+        await page.render({canvasContext:ctx, viewport}).promise;
+        const blob = await new Promise(res=>canvas.toBlob(res,"image/png"));
+        zip.file(`sayfa-${String(i).padStart(3,"0")}.png`, blob);
+      }
+      const zipBlob = await zip.generateAsync({type:"blob"});
+      makeBlobDownload(zipBlob, "pdf-goruntuleri.zip");
+      setStatus(`${pdf.numPages} sayfa PNG olarak ZIP dosyasına eklendi.`, "ok");
+    }
+
+    async function watermarkPdf(){
+      requireFiles(1);
+      const pdf = await PDFDocument.load(await state.files[0].arrayBuffer(), {ignoreEncryption:true});
+      const font = await pdf.embedFont(StandardFonts.HelveticaBold);
+      const text = document.getElementById("textInput").value || "ÖRNEK";
+      const size = Number(document.getElementById("sizeInput").value || 54);
+      pdf.getPages().forEach(page=>{
+        const {width,height}=page.getSize();
+        page.drawText(text,{
+          x:width*.18,y:height*.48,size,font,
+          color:rgb(.85,.85,.85),
+          opacity:.28,
+          rotate:degrees(35)
+        });
+      });
+      await savePdf(pdf, "filigranli-pdf.pdf", "Filigran eklendi.");
+    }
+
+    async function pageNumbersPdf(){
+      requireFiles(1);
+      const pdf = await PDFDocument.load(await state.files[0].arrayBuffer(), {ignoreEncryption:true});
+      const font = await pdf.embedFont(StandardFonts.Helvetica);
+      const start = Number(document.getElementById("startInput").value || 1);
+      const pos = document.getElementById("posInput").value;
+      pdf.getPages().forEach((page,i)=>{
+        const {width,height}=page.getSize();
+        const text = String(start+i);
+        const tw = font.widthOfTextAtSize(text, 11);
+        let x = (width-tw)/2, y = 22;
+        if(pos==="bottom-right"){ x=width-tw-34; y=22; }
+        if(pos==="top-right"){ x=width-tw-34; y=height-34; }
+        page.drawText(text,{x,y,size:11,font,color:rgb(.15,.15,.15)});
+      });
+      await savePdf(pdf, "sayfa-numarali-pdf.pdf", "Sayfa numaraları eklendi.");
+    }
+
+    async function addTextPdf(){
+      requireFiles(1);
+      const pdf = await PDFDocument.load(await state.files[0].arrayBuffer(), {ignoreEncryption:true});
+      const font = await pdf.embedFont(StandardFonts.Helvetica);
+      const text = document.getElementById("textInput").value || "";
+      const x = Number(document.getElementById("xInput").value || 50);
+      const y = Number(document.getElementById("yInput").value || 740);
+      const pageInput = document.getElementById("pagesInput").value.trim();
+      const idx = pageInput ? parsePages(pageInput, pdf.getPageCount()) : [0];
+      idx.forEach(i=>{
+        pdf.getPage(i).drawText(text,{x,y,size:14,font,color:rgb(.05,.05,.05),lineHeight:18});
+      });
+      await savePdf(pdf, "metin-eklenmis-pdf.pdf", "Metin PDF üzerine eklendi.");
+    }
+
+    async function signPdf(){
+      requireFiles(1);
+      const pdf = await PDFDocument.load(await state.files[0].arrayBuffer(), {ignoreEncryption:true});
+      const dataUrl = state.signatureCanvas.toDataURL("image/png");
+      const sig = await pdf.embedPng(dataUrl);
+      const pageInput = document.getElementById("pagesInput").value.trim();
+      const idx = pageInput ? parsePages(pageInput, pdf.getPageCount()) : pdf.getPageIndices();
+      idx.forEach(i=>{
+        const page = pdf.getPage(i);
+        const {width}=page.getSize();
+        page.drawImage(sig,{x:width-210,y:45,width:150,height:43});
+      });
+      await savePdf(pdf, "imzali-pdf.pdf", "İmza PDF'ye eklendi.");
+    }
+
+    async function redactPdf(){
+      requireFiles(1);
+      const pdf = await PDFDocument.load(await state.files[0].arrayBuffer(), {ignoreEncryption:true});
+      const x = Number(document.getElementById("xInput").value || 60);
+      const y = Number(document.getElementById("yInput").value || 650);
+      const w = Number(document.getElementById("wInput").value || 250);
+      const h = Number(document.getElementById("hInput").value || 45);
+      const pageInput = document.getElementById("pagesInput").value.trim();
+      const idx = pageInput ? parsePages(pageInput, pdf.getPageCount()) : [0];
+      idx.forEach(i=>pdf.getPage(i).drawRectangle({x,y,width:w,height:h,color:rgb(0,0,0)}));
+      await savePdf(pdf, "karalanmis-pdf.pdf", "Karalama alanı eklendi.");
+    }
+
+    async function comparePdfs(){
+      if(state.files.length<2) throw new Error("Karşılaştırmak için iki PDF seçin.");
+      const texts = [];
+      for(const file of state.files.slice(0,2)){
+        const doc = await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+        let full = "";
+        for(let i=1;i<=doc.numPages;i++){
+          const page = await doc.getPage(i);
+          const content = await page.getTextContent();
+          full += content.items.map(x=>x.str).join(" ") + "\n";
+        }
+        texts.push(full);
+      }
+      const a = new Set(texts[0].split(/\n|(?<=\.)\s+/).map(s=>s.trim()).filter(Boolean));
+      const b = new Set(texts[1].split(/\n|(?<=\.)\s+/).map(s=>s.trim()).filter(Boolean));
+      const onlyA = [...a].filter(x=>!b.has(x)).slice(0,20);
+      const onlyB = [...b].filter(x=>!a.has(x)).slice(0,20);
+      setStatus(`Karşılaştırma tamamlandı.\n\n1. PDF'de olup 2. PDF'de olmayan satırlar (${onlyA.length} örnek):\n- ${onlyA.join("\n- ")}\n\n2. PDF'de olup 1. PDF'de olmayan satırlar (${onlyB.length} örnek):\n- ${onlyB.join("\n- ")}`, "ok");
+    }
+
+    async function ocrImage(){
+      requireFiles(1);
+      const lang = document.getElementById("langInput").value;
+      const result = await Tesseract.recognize(state.files[0], lang, {
+        logger:m=>{ if(m.status) setStatus(`OCR: ${m.status} ${m.progress?Math.round(m.progress*100)+"%":""}`); }
+      });
+      const text = result.data.text.trim();
+      const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+      makeBlobDownload(blob, "ocr-sonucu.txt");
+      setStatus(text ? `OCR tamamlandı:\n\n${text.slice(0,1200)}` : "Metin bulunamadı.", text ? "ok" : "err");
+    }
+
+    async function webToPdf(){
+      const url = document.getElementById("urlInput").value.trim();
+      if(!url) throw new Error("URL yazın.");
+      const note = document.getElementById("webNote").value;
+      const pdf = await PDFDocument.create();
+      const page = pdf.addPage([595.28,841.89]);
+      const font = await pdf.embedFont(StandardFonts.Helvetica);
+      const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+      page.drawText("Web Sayfası Arşiv PDF'i",{x:50,y:780,size:22,font:bold,color:rgb(.05,.05,.05)});
+      page.drawText("URL:",{x:50,y:735,size:13,font:bold,color:rgb(.05,.05,.05)});
+      wrapDraw(page,url,50,712,495,12,font,rgb(.05,.20,.55));
+      page.drawText("Oluşturulma:",{x:50,y:660,size:13,font:bold,color:rgb(.05,.05,.05)});
+      page.drawText(new Date().toLocaleString("tr-TR"),{x:50,y:638,size:12,font,color:rgb(.1,.1,.1)});
+      page.drawText("Not:",{x:50,y:598,size:13,font:bold,color:rgb(.05,.05,.05)});
+      wrapDraw(page,note,50,574,495,12,font,rgb(.1,.1,.1));
+      await savePdf(pdf, "web-arsiv.pdf", "Web arşiv PDF'i oluşturuldu.");
+    }
+
+    // ---- Gerçek PDF şifreleme (PDF Standard Security Handler: RC4 128-bit, Algoritma 2 & 3) ----
+    // Not: pdf-lib şifrelemeyi desteklemez, bu yüzden PDF spesifikasyonuna uygun
+    // minimal bir MD5 + RC4 uygulaması burada kullanılıyor.
+
+    function pdfCrypto_md5(data){
+      const bytes = typeof data === "string" ? new TextEncoder().encode(data) : data;
+      const S = [7,12,17,22,7,12,17,22,7,12,17,22,7,12,17,22,5,9,14,20,5,9,14,20,5,9,14,20,5,9,14,20,4,11,16,23,4,11,16,23,4,11,16,23,4,11,16,23,6,10,15,21,6,10,15,21,6,10,15,21,6,10,15,21];
+      const K = new Uint32Array([0xd76aa478,0xe8c7b756,0x242070db,0xc1bdceee,0xf57c0faf,0x4787c62a,0xa8304613,0xfd469501,0x698098d8,0x8b44f7af,0xffff5bb1,0x895cd7be,0x6b901122,0xfd987193,0xa679438e,0x49b40821,0xf61e2562,0xc040b340,0x265e5a51,0xe9b6c7aa,0xd62f105d,0x02441453,0xd8a1e681,0xe7d3fbc8,0x21e1cde6,0xc33707d6,0xf4d50d87,0x455a14ed,0xa9e3e905,0xfcefa3f8,0x676f02d9,0x8d2a4c8a,0xfffa3942,0x8771f681,0x6d9d6122,0xfde5380c,0xa4beea44,0x4bdecfa9,0xf6bb4b60,0xbebfbc70,0x289b7ec6,0xeaa127fa,0xd4ef3085,0x04881d05,0xd9d4d039,0xe6db99e5,0x1fa27cf8,0xc4ac5665,0xf4292244,0x432aff97,0xab9423a7,0xfc93a039,0x655b59c3,0x8f0ccc92,0xffeff47d,0x85845dd1,0x6fa87e4f,0xfe2ce6e0,0xa3014314,0x4e0811a1,0xf7537e82,0xbd3af235,0x2ad7d2bb,0xeb86d391]);
+      let a0=0x67452301,b0=0xefcdab89,c0=0x98badcfe,d0=0x10325476;
+      const msgLen = bytes.length;
+      const msgBitLen = msgLen * 8;
+      const msgLenPadded = ((msgLen + 9 + 63) & ~63);
+      const msg = new Uint8Array(msgLenPadded);
+      msg.set(bytes);
+      msg[msgLen] = 0x80;
+      const dataView = new DataView(msg.buffer);
+      dataView.setUint32(msgLenPadded - 8, msgBitLen, true);
+      dataView.setUint32(msgLenPadded - 4, 0, true);
+      for(let offset=0; offset<msgLenPadded; offset+=64){
+        const chunk = new Uint32Array(msg.buffer, offset, 16);
+        let a=a0,b=b0,c=c0,d=d0;
+        for(let i=0;i<64;i++){
+          let f,g;
+          if(i<16){ f=(b&c)|((~b)&d); g=i; }
+          else if(i<32){ f=(d&b)|((~d)&c); g=(5*i+1)%16; }
+          else if(i<48){ f=b^c^d; g=(3*i+5)%16; }
+          else { f=c^(b|(~d)); g=(7*i)%16; }
+          f = (f + a + K[i] + chunk[g]) >>> 0;
+          a=d; d=c; c=b;
+          b = (b + ((f<<S[i]) | (f>>>(32-S[i])))) >>> 0;
+        }
+        a0=(a0+a)>>>0; b0=(b0+b)>>>0; c0=(c0+c)>>>0; d0=(d0+d)>>>0;
+      }
+      const result = new Uint8Array(16);
+      const view = new DataView(result.buffer);
+      view.setUint32(0,a0,true); view.setUint32(4,b0,true); view.setUint32(8,c0,true); view.setUint32(12,d0,true);
+      return result;
+    }
+
+    class PdfCrypto_RC4{
+      constructor(key){
+        this.s = new Uint8Array(256);
+        this.i = 0; this.j = 0;
+        for(let i=0;i<256;i++) this.s[i]=i;
+        let j=0;
+        for(let i=0;i<256;i++){
+          j = (j + this.s[i] + key[i % key.length]) & 0xFF;
+          [this.s[i], this.s[j]] = [this.s[j], this.s[i]];
+        }
+      }
+      process(data){
+        const result = new Uint8Array(data.length);
+        for(let k=0;k<data.length;k++){
+          this.i = (this.i + 1) & 0xFF;
+          this.j = (this.j + this.s[this.i]) & 0xFF;
+          [this.s[this.i], this.s[this.j]] = [this.s[this.j], this.s[this.i]];
+          const t = (this.s[this.i] + this.s[this.j]) & 0xFF;
+          result[k] = data[k] ^ this.s[t];
+        }
+        return result;
+      }
+    }
+
+    function pdfCrypto_hexToBytes(hex){
+      const bytes = new Uint8Array(hex.length / 2);
+      for(let i=0;i<bytes.length;i++) bytes[i] = parseInt(hex.substr(i*2,2),16);
+      return bytes;
+    }
+    function pdfCrypto_bytesToHex(bytes){
+      return Array.from(bytes).map(b=>b.toString(16).padStart(2,"0")).join("");
+    }
+
+    const PDF_CRYPTO_PADDING = new Uint8Array([
+      0x28,0xBF,0x4E,0x5E,0x4E,0x75,0x8A,0x41,0x64,0x00,0x4E,0x56,0xFF,0xFA,0x01,0x08,
+      0x2E,0x2E,0x00,0xB6,0xD0,0x68,0x3E,0x80,0x2F,0x0C,0xA9,0xFE,0x64,0x53,0x69,0x7A
+    ]);
+
+    function pdfCrypto_padPassword(password){
+      const pwdBytes = new TextEncoder().encode(password);
+      const padded = new Uint8Array(32);
+      if(pwdBytes.length >= 32){
+        padded.set(pwdBytes.slice(0,32));
+      } else {
+        padded.set(pwdBytes);
+        padded.set(PDF_CRYPTO_PADDING.slice(0, 32 - pwdBytes.length), pwdBytes.length);
+      }
+      return padded;
+    }
+
+    function pdfCrypto_computeEncryptionKey(userPassword, ownerKey, permissions, fileId){
+      const paddedPwd = pdfCrypto_padPassword(userPassword);
+      const hashInput = new Uint8Array(paddedPwd.length + ownerKey.length + 4 + fileId.length);
+      let offset = 0;
+      hashInput.set(paddedPwd, offset); offset += paddedPwd.length;
+      hashInput.set(ownerKey, offset); offset += ownerKey.length;
+      hashInput[offset++] = permissions & 0xFF;
+      hashInput[offset++] = (permissions >> 8) & 0xFF;
+      hashInput[offset++] = (permissions >> 16) & 0xFF;
+      hashInput[offset++] = (permissions >> 24) & 0xFF;
+      hashInput.set(fileId, offset);
+      let hash = pdfCrypto_md5(hashInput);
+      for(let i=0;i<50;i++) hash = pdfCrypto_md5(hash.slice(0,16));
+      return hash.slice(0,16);
+    }
+
+    function pdfCrypto_computeOwnerKey(ownerPassword, userPassword){
+      const paddedOwner = pdfCrypto_padPassword(ownerPassword || userPassword);
+      let hash = pdfCrypto_md5(paddedOwner);
+      for(let i=0;i<50;i++) hash = pdfCrypto_md5(hash);
+      const paddedUser = pdfCrypto_padPassword(userPassword);
+      let result = new Uint8Array(paddedUser);
+      for(let i=0;i<20;i++){
+        const key = new Uint8Array(hash.length);
+        for(let j=0;j<hash.length;j++) key[j] = hash[j] ^ i;
+        const rc4 = new PdfCrypto_RC4(key.slice(0,16));
+        result = rc4.process(result);
+      }
+      return result;
+    }
+
+    function pdfCrypto_computeUserKey(encryptionKey, fileId){
+      const hashInput = new Uint8Array(PDF_CRYPTO_PADDING.length + fileId.length);
+      hashInput.set(PDF_CRYPTO_PADDING);
+      hashInput.set(fileId, PDF_CRYPTO_PADDING.length);
+      const hash = pdfCrypto_md5(hashInput);
+      const rc4 = new PdfCrypto_RC4(encryptionKey);
+      let result = rc4.process(hash);
+      for(let i=1;i<=19;i++){
+        const key = new Uint8Array(encryptionKey.length);
+        for(let j=0;j<encryptionKey.length;j++) key[j] = encryptionKey[j] ^ i;
+        const rc4iter = new PdfCrypto_RC4(key);
+        result = rc4iter.process(result);
+      }
+      const finalResult = new Uint8Array(32);
+      finalResult.set(result);
+      finalResult.set(new Uint8Array(16), 16);
+      return finalResult;
+    }
+
+    function pdfCrypto_encryptObject(data, objectNum, generationNum, encryptionKey){
+      const keyInput = new Uint8Array(encryptionKey.length + 5);
+      keyInput.set(encryptionKey);
+      keyInput[encryptionKey.length] = objectNum & 0xFF;
+      keyInput[encryptionKey.length+1] = (objectNum >> 8) & 0xFF;
+      keyInput[encryptionKey.length+2] = (objectNum >> 16) & 0xFF;
+      keyInput[encryptionKey.length+3] = generationNum & 0xFF;
+      keyInput[encryptionKey.length+4] = (generationNum >> 8) & 0xFF;
+      const objectKey = pdfCrypto_md5(keyInput);
+      const rc4 = new PdfCrypto_RC4(objectKey.slice(0, Math.min(encryptionKey.length + 5, 16)));
+      return rc4.process(data);
+    }
+
+    function pdfCrypto_encryptStringsInObject(obj, objectNum, generationNum, encryptionKey){
+      if(!obj) return;
+      if(obj instanceof PDFString){
+        const originalBytes = obj.asBytes();
+        const encrypted = pdfCrypto_encryptObject(originalBytes, objectNum, generationNum, encryptionKey);
+        obj.value = Array.from(encrypted).map(b=>String.fromCharCode(b)).join("");
+      } else if(obj instanceof PDFHexString){
+        const originalBytes = obj.asBytes();
+        const encrypted = pdfCrypto_encryptObject(originalBytes, objectNum, generationNum, encryptionKey);
+        obj.value = pdfCrypto_bytesToHex(encrypted);
+      } else if(obj instanceof PDFDict){
+        const entries = obj.entries();
+        for(const [key, value] of entries){
+          const keyName = key.asString();
+          if(keyName !== "/Length" && keyName !== "/Filter" && keyName !== "/DecodeParms"){
+            pdfCrypto_encryptStringsInObject(value, objectNum, generationNum, encryptionKey);
+          }
+        }
+      } else if(obj instanceof PDFArray){
+        const array = obj.asArray();
+        for(const element of array) pdfCrypto_encryptStringsInObject(element, objectNum, generationNum, encryptionKey);
+      }
+    }
+
+    function pdfCrypto_computeEncryptionKeyGeneric(userPassword, ownerKeyBytes, permissions, fileId, revision, keyLengthBytes){
+      const paddedPwd = pdfCrypto_padPassword(userPassword);
+      const hashInput = new Uint8Array(paddedPwd.length + ownerKeyBytes.length + 4 + fileId.length);
+      let offset = 0;
+      hashInput.set(paddedPwd, offset); offset += paddedPwd.length;
+      hashInput.set(ownerKeyBytes, offset); offset += ownerKeyBytes.length;
+      hashInput[offset++] = permissions & 0xFF;
+      hashInput[offset++] = (permissions >> 8) & 0xFF;
+      hashInput[offset++] = (permissions >> 16) & 0xFF;
+      hashInput[offset++] = (permissions >> 24) & 0xFF;
+      hashInput.set(fileId, offset);
+      let hash = pdfCrypto_md5(hashInput);
+      if(revision >= 3){
+        for(let i=0;i<50;i++) hash = pdfCrypto_md5(hash.slice(0, keyLengthBytes));
+      }
+      return hash.slice(0, keyLengthBytes);
+    }
+
+    // trailer.ID; yeni oluşturulmuşsa düz JS dizisi, dosyadan okunmuşsa PDFArray örneği olabilir.
+    function pdfCrypto_getIdArray(trailerID){
+      if(!trailerID) return null;
+      if(Array.isArray(trailerID)) return trailerID;
+      if(typeof trailerID.asArray === "function") return trailerID.asArray();
+      return null;
+    }
+
+    function pdfCrypto_bytesEqual(a, b, len){
+      const n = len ?? Math.max(a.length, b.length);
+      for(let i=0;i<n;i++) if((a[i]||0) !== (b[i]||0)) return false;
+      return true;
+    }
+
+    // Bir PDF'in gerçek şifresini kaldırır (RC4 40/128-bit, PDF Standard Security Handler).
+    // AES (V4/V5, R4-6) şifreli PDF'leri desteklemez.
+    async function decryptPdfWithPassword(pdfBytes, password){
+      const pdfDoc = await PDFDocument.load(pdfBytes, {ignoreEncryption:true, updateMetadata:false});
+      const context = pdfDoc.context;
+      const trailer = context.trailerInfo;
+      if(!trailer.Encrypt){
+        // Zaten şifresiz
+        return await pdfDoc.save({useObjectStreams:true, addDefaultPage:false});
+      }
+      const encryptDict = context.lookup(trailer.Encrypt, PDFDict);
+      const vNum = encryptDict.lookup(PDFName.of("V"), PDFNumber)?.asNumber() ?? 1;
+      const rNum = encryptDict.lookup(PDFName.of("R"), PDFNumber)?.asNumber() ?? 2;
+      if(vNum > 2 || rNum > 3){
+        throw new Error("Bu PDF, AES tabanlı gelişmiş bir şifreleme (V4/V5) ile korunuyor ve bu araç tarafından desteklenmiyor.");
+      }
+      const lengthBits = encryptDict.lookup(PDFName.of("Length"), PDFNumber)?.asNumber() ?? 40;
+      const pNum = encryptDict.lookup(PDFName.of("P"), PDFNumber)?.asNumber() ?? -1;
+      const oBytes = encryptDict.lookup(PDFName.of("O"), PDFHexString).asBytes();
+      const uBytes = encryptDict.lookup(PDFName.of("U"), PDFHexString).asBytes();
+
+      const idArray = pdfCrypto_getIdArray(trailer.ID);
+      let fileId = new Uint8Array(0);
+      if(idArray && idArray.length > 0){
+        const idString = idArray[0].toString();
+        fileId = pdfCrypto_hexToBytes(idString.replace(/^<|>$/g, ""));
+      }
+
+      const keyLengthBytes = rNum === 2 ? 5 : Math.floor(lengthBits / 8);
+      const encryptionKey = pdfCrypto_computeEncryptionKeyGeneric(password, oBytes, pNum, fileId, rNum, keyLengthBytes);
+
+      let valid;
+      if(rNum === 2){
+        const rc4 = new PdfCrypto_RC4(encryptionKey);
+        const test = rc4.process(PDF_CRYPTO_PADDING);
+        valid = pdfCrypto_bytesEqual(test, uBytes, 32);
+      } else {
+        const testFull = pdfCrypto_computeUserKey(encryptionKey, fileId);
+        valid = pdfCrypto_bytesEqual(testFull, uBytes, 16);
+      }
+      if(!valid){
+        throw new Error("Girdiğiniz şifre yanlış veya dosya açılamadı.");
+      }
+
+      const indirectObjects = context.enumerateIndirectObjects();
+      for(const [ref, obj] of indirectObjects){
+        const objectNum = ref.objectNumber;
+        const generationNum = ref.generationNumber || 0;
+        if(obj instanceof PDFDict){
+          const filter = obj.get(PDFName.of("Filter"));
+          if(filter && filter.asString() === "/Standard") continue;
+        }
+        if(obj instanceof PDFRawStream && obj.dict){
+          const type = obj.dict.get(PDFName.of("Type"));
+          if(type){
+            const typeName = type.toString();
+            if(typeName === "/XRef" || typeName === "/Sig") continue;
+          }
+        }
+        if(obj instanceof PDFRawStream){
+          const streamData = obj.contents;
+          // RC4 simetriktir: aynı anahtarla tekrar işlemek şifreyi çözer.
+          obj.contents = pdfCrypto_encryptObject(streamData, objectNum, generationNum, encryptionKey);
+          if(obj.dict) pdfCrypto_encryptStringsInObject(obj.dict, objectNum, generationNum, encryptionKey);
+        }
+        if(!(obj instanceof PDFRawStream)){
+          pdfCrypto_encryptStringsInObject(obj, objectNum, generationNum, encryptionKey);
+        }
+      }
+
+      delete trailer.Encrypt;
+      return await pdfDoc.save({useObjectStreams:true, addDefaultPage:false});
+    }
+
+    async function encryptPdfWithPassword(pdfBytes, userPassword, ownerPassword){
+      const pdfDoc = await PDFDocument.load(pdfBytes, {ignoreEncryption:true, updateMetadata:false});
+      const context = pdfDoc.context;
+      let fileId;
+      const trailer = context.trailerInfo;
+      const idArray = pdfCrypto_getIdArray(trailer.ID);
+      if(idArray && idArray.length > 0){
+        const idString = idArray[0].toString();
+        const hexStr = idString.replace(/^<|>$/g, "");
+        fileId = pdfCrypto_hexToBytes(hexStr);
+      } else {
+        const randomBytes = new Uint8Array(16);
+        if(typeof crypto !== "undefined" && crypto.getRandomValues) crypto.getRandomValues(randomBytes);
+        else for(let i=0;i<16;i++) randomBytes[i] = Math.floor(Math.random()*256);
+        fileId = randomBytes;
+        const idHex1 = PDFHexString.of(pdfCrypto_bytesToHex(fileId));
+        const idHex2 = PDFHexString.of(pdfCrypto_bytesToHex(fileId));
+        trailer.ID = [idHex1, idHex2];
+      }
+      const permissions = 0xFFFFFFFC;
+      const ownerKey = pdfCrypto_computeOwnerKey(ownerPassword, userPassword);
+      const encryptionKey = pdfCrypto_computeEncryptionKey(userPassword, ownerKey, permissions, fileId);
+      const userKey = pdfCrypto_computeUserKey(encryptionKey, fileId);
+      const indirectObjects = context.enumerateIndirectObjects();
+      for(const [ref, obj] of indirectObjects){
+        const objectNum = ref.objectNumber;
+        const generationNum = ref.generationNumber || 0;
+        if(obj instanceof PDFDict){
+          const filter = obj.get(PDFName.of("Filter"));
+          if(filter && filter.asString() === "/Standard") continue;
+        }
+        if(obj instanceof PDFRawStream && obj.dict){
+          const type = obj.dict.get(PDFName.of("Type"));
+          if(type){
+            const typeName = type.toString();
+            if(typeName === "/XRef" || typeName === "/Sig") continue;
+          }
+        }
+        if(obj instanceof PDFRawStream){
+          const streamData = obj.contents;
+          const encrypted = pdfCrypto_encryptObject(streamData, objectNum, generationNum, encryptionKey);
+          obj.contents = encrypted;
+          if(obj.dict) pdfCrypto_encryptStringsInObject(obj.dict, objectNum, generationNum, encryptionKey);
+        }
+        if(!(obj instanceof PDFRawStream)){
+          pdfCrypto_encryptStringsInObject(obj, objectNum, generationNum, encryptionKey);
+        }
+      }
+      const encryptDict = context.obj({
+        Filter: PDFName.of("Standard"),
+        V: PDFNumber.of(2),
+        R: PDFNumber.of(3),
+        Length: PDFNumber.of(128),
+        P: PDFNumber.of(permissions),
+        O: PDFHexString.of(pdfCrypto_bytesToHex(ownerKey)),
+        U: PDFHexString.of(pdfCrypto_bytesToHex(userKey))
+      });
+      const encryptRef = context.register(encryptDict);
+      trailer.Encrypt = encryptRef;
+      return await pdfDoc.save({useObjectStreams:false});
+    }
+
+    async function protectPdf(){
+      requireFiles(1);
+      const pass = document.getElementById("protectPassword")?.value || "";
+      const confirmPass = document.getElementById("protectPasswordConfirm")?.value || "";
+      if(!pass) throw new Error("Lütfen bir şifre belirleyin.");
+      if(pass !== confirmPass) throw new Error("Girdiğiniz şifreler eşleşmiyor.");
+      const srcBytes = await state.files[0].arrayBuffer();
+      const encryptedBytes = await encryptPdfWithPassword(new Uint8Array(srcBytes), pass);
+      makeDownload(encryptedBytes, "sifrelenmis-pdf.pdf", "application/pdf");
+      setStatus("PDF başarıyla şifrelendi! Dosyayı açmak için belirlediğiniz şifre gerekecek.", "ok");
+    }
+
+    async function converter(){
+      requireFiles(1);
+      if(state.files[0].type==="application/pdf" || state.files[0].name.toLowerCase().endsWith(".pdf")) await pdfToImages();
+      else await imagesToPdf();
+    }
+
+    async function createPdf(){
+      const title = document.getElementById("pdfTitleInput").value || "Yeni PDF";
+      const text = document.getElementById("createText").value || "";
+      const pdf = await PDFDocument.create();
+      pdf.setTitle(title);
+      const font = await pdf.embedFont(StandardFonts.Helvetica);
+      const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+      let page = pdf.addPage([595.28,841.89]);
+      let y = 785;
+      page.drawText(title,{x:50,y,size:20,font:bold,color:rgb(.05,.05,.05)});
+      y -= 38;
+      const lines = wrapText(text, 86);
+      for(const line of lines){
+        if(y < 55){ page = pdf.addPage([595.28,841.89]); y = 785; }
+        page.drawText(line,{x:50,y,size:12,font,color:rgb(.08,.08,.08)});
+        y -= 18;
+      }
+      await savePdf(pdf, "yeni-pdf.pdf", "PDF oluşturuldu.");
+    }
+
+    async function savePdf(pdf, filename, msg){
+      const bytes = await pdf.save({useObjectStreams:true});
+      makeDownload(bytes, filename, "application/pdf");
+      setStatus(msg, "ok");
+    }
+
+    function makeDownload(bytes, filename, type){
+      makeBlobDownload(new Blob([bytes], {type}), filename);
+    }
+    function makeBlobDownload(blob, filename){
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href=url;
+      a.download=filename;
+      a.className="download-link";
+      a.textContent="⬇ " + filename;
+      document.getElementById("downloads").appendChild(a);
+    }
+    function clearDownloads(){
+      const d = document.getElementById("downloads");
+      if(d) d.innerHTML="";
+    }
+    function setStatus(msg, type){
+      const s = document.getElementById("status");
+      if(!s) return;
+      s.className = "status" + (type ? " " + type : "");
+      s.textContent = msg;
+    }
+
+    function requireFiles(n){
+      if(state.files.length < n) throw new Error(n===1 ? "Lütfen bir dosya seçin." : `Lütfen en az ${n} dosya seçin.`);
+    }
+
+    function parsePages(input, count){
+      const set = new Set();
+      input.split(",").map(x=>x.trim()).filter(Boolean).forEach(part=>{
+        if(part.includes("-")){
+          let [a,b]=part.split("-").map(x=>Number(x.trim()));
+          if(!a || !b) return;
+          if(a>b) [a,b]=[b,a];
+          for(let i=a;i<=b;i++) if(i>=1 && i<=count) set.add(i-1);
+        }else{
+          const n = Number(part);
+          if(n>=1 && n<=count) set.add(n-1);
+        }
+      });
+      return [...set].sort((a,b)=>a-b);
+    }
+
+    function wrapText(text, maxChars){
+      const out = [];
+      text.split("\n").forEach(par=>{
+        let line = "";
+        par.split(/\s+/).forEach(word=>{
+          if((line+" "+word).trim().length > maxChars){
+            out.push(line);
+            line = word;
+          }else line = (line+" "+word).trim();
+        });
+        out.push(line);
+      });
+      return out;
+    }
+
+    function wrapDraw(page,text,x,y,maxW,size,font,color){
+      const approx = Math.max(30, Math.floor(maxW/(size*.55)));
+      const lines = wrapText(text, approx);
+      lines.forEach((line,i)=>page.drawText(line,{x,y:y-i*(size+6),size,font,color}));
+    }
+
+    function formatBytes(bytes){
+      if(bytes===0) return "0 B";
+      const k=1024, sizes=["B","KB","MB","GB"];
+      const i=Math.floor(Math.log(bytes)/Math.log(k));
+      return parseFloat((bytes/Math.pow(k,i)).toFixed(2))+" "+sizes[i];
+    }
+    function escapeHtml(str){
+      return str.replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+    }
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(window.__toast);
+      window.__toast = setTimeout(()=>toast.classList.remove("show"),2200);
+    }
+
+    renderCategories();
+    renderTools();
+  </script>
+</body>
+</html>
